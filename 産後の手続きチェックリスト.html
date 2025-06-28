@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出産後手続きチェックリスト</title>
+    <style>
+        /* 全体的に元のHTMLのトーンを維持しつつ、画像の色味からヒントを得て洗練されたピンク系に調整 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #3A3A3A; /* 読みやすい濃いグレーを維持 */
+            background: #FFFAF9; /* 元のHTMLの明るいピンク背景を維持 */
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #FFFFFF; /* 白を維持 */
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* 影も元のまま */
+            overflow: hidden;
+        }
+
+        .header {
+            background: #F6D5DC; /* 元のHTMLの色を維持 */
+            color: #3A3A3A; /* 文字色を濃いグレーに */
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .header p {
+            font-size: 1em;
+        }
+
+        .date-input-section {
+            background: #F8EDF0; /* ヘッダーより一段階薄い、柔らかいピンク */
+            padding: 25px;
+            border-bottom: 1px solid #F2DDE3; /* 元のHTMLの注意事項セクションのボーダーと同じ色 */
+            text-align: center;
+        }
+
+        .date-input-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .date-input-container label {
+            font-weight: 600;
+            color: #555;
+            font-size: 17px;
+        }
+
+        #dueDateInput {
+            padding: 10px 15px;
+            border: 1px solid #D7C0C7; /* 落ち着いたピンクのボーダー */
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s ease;
+            color: #3A3A3A;
+            width: auto;
+            max-width: 220px;
+        }
+
+        #dueDateInput:focus {
+            outline: none;
+            border-color: #B28F9E; /* フォーカス時に少し濃いめのピンク */
+            box-shadow: 0 0 0 3px rgba(178, 143, 158, 0.2); /* 控えめな影 */
+        }
+
+        .reset-btn {
+            background: #D79BA0; /* 注意事項の箇条書きと同じ色、または少し濃いめのピンク */
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); /* 控えめな影 */
+        }
+
+        .reset-btn:hover {
+            background: #A1546E; /* 注意事項のstrongと同じ色 */
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+            padding: 0 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        .legend-color {
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* 優先度色を元のトーンに合わせたピンク系で調整 */
+        .priority-high .legend-color { background: #A1546E; } /* 注意事項のstrongと同じ、しっかりしたピンク */
+        .priority-medium .legend-color { background: #D79BA0; } /* 注意事項の箇条書きと同じ、中間ピンク */
+        .priority-low .legend-color { background: #F2DDE3; } /* 注意事項のボーダーと同じ、淡いピンク */
+
+        .spreadsheet-container {
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .spreadsheet {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+            min-width: 750px;
+        }
+
+        .spreadsheet th {
+            background: #F6D5DC; /* ヘッダーと同じ色 */
+            color: #3A3A3A;
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .spreadsheet td {
+            padding: 14px 12px;
+            border: 1px solid #F2DDE3; /* 注意事項のボーダーと同じ色 */
+            text-align: left;
+            vertical-align: middle;
+            color: #3A3A3A;
+            font-weight: 400;
+        }
+
+        .spreadsheet tr:nth-child(even) {
+            background: #FFFDFE; /* わずかにピンクがかった白 */
+        }
+
+        .spreadsheet tr:nth-child(odd) {
+            background: white;
+        }
+
+        .spreadsheet tr:hover {
+            background: #FDF5F7; /* 注意事項セクションの背景と同じ色 */
+            transition: background-color 0.2s ease;
+        }
+
+        /* 優先度による左ボーダーと背景色（新しい色に調整） */
+        .priority-high {
+            border-left: 5px solid #A1546E; /* strongと同じ濃いピンク */
+        }
+        .priority-medium {
+            border-left: 5px solid #D79BA0; /* 箇条書きと同じ中間ピンク */
+        }
+        .priority-low {
+            border-left: 5px solid #F2DDE3; /* 淡いピンク */
+        }
+
+        /* 期限による強調色 (元に近く、落ち着いたトーンに調整) */
+        .expired {
+            background: #FFE0E0 !important; /* 控えめな赤系 */
+            color: #C04040; /* 落ち着いた赤 */
+            font-weight: bold;
+        }
+        .soon {
+            background: #FFF7DA !important; /* 控えめな黄系 */
+            color: #8D6B2B; /* 落ち着いた茶系 */
+            font-weight: bold;
+        }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            accent-color: #D79BA0; /* 箇条書きと同じ中間ピンク */
+            cursor: pointer;
+            margin: auto;
+            display: block;
+        }
+
+        .deadline-cell {
+            font-weight: 600;
+            color: #4a5568;
+            text-align: center;
+        }
+
+        .category-header {
+            background: #F6D5DC; /* ヘッダーと同じ明るいピンク */
+            color: #3A3A3A;
+            font-size: 1.05em;
+            font-weight: 600;
+            text-align: left !important;
+            padding-left: 15px !important;
+        }
+
+        .notes-section {
+            background: #FDF5F7; /* 元のHTMLの背景色を維持 */
+            border: 1px solid #F2DDE3; /* 元のHTMLのボーダー色を維持 */
+            border-radius: 10px;
+            padding: 24px;
+            margin: 24px;
+            color: #3A3A3A;
+            font-size: 1em;
+        }
+
+        .notes-section h3 {
+            color: #BDA5C9; /* 元のHTMLのタイトル色を維持 */
+            margin-bottom: 16px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border-bottom: 1px solid #F2DDE3; /* 元のHTMLのボーダー色を維持 */
+            padding-bottom: 8px;
+        }
+
+        .notes-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .notes-section li {
+            margin-bottom: 10px;
+            padding-left: 28px;
+            position: relative;
+            color: #3A3A3A;
+        }
+
+        .notes-section li::before {
+            content: "●";
+            position: absolute;
+            left: 0;
+            color: #D79BA0; /* 元のHTMLの箇条書き色を維持 */
+            font-weight: bold;
+            font-size: 1.1em;
+            line-height: 1;
+        }
+
+        .notes-section strong {
+            color: #A1546E; /* 元のHTMLの強調色を維持 */
+            font-weight: bold;
+        }
+
+        .reference-link {
+            color: #777; /* 目立ちすぎないグレー */
+            text-decoration: underline;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: block;
+            font-weight: 500;
+        }
+
+        .reference-link:hover {
+            color: #555; /* ホバー時に少し濃く */
+            text-decoration: none;
+        }
+
+        td input[type="text"] {
+            border: 1px solid #F2DDE3; /* 元のHTMLのボーダー色に合わせる */
+            border-radius: 6px;
+            padding: 8px;
+            width: 100%;
+            color: #3A3A3A;
+            font-size: 0.95em;
+        }
+        td input[type="text"]:focus {
+            outline: none;
+            border-color: #D79BA0; /* 箇条書きと同じ中間ピンク */
+            box-shadow: 0 0 0 3px rgba(215, 155, 160, 0.1); /* 控えめな影 */
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .date-input-container {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+
+            #dueDateInput, .reset-btn {
+                width: 90%;
+                max-width: 280px;
+            }
+
+            .spreadsheet {
+                font-size: 0.85em;
+                min-width: auto;
+            }
+
+            .spreadsheet th,
+            .spreadsheet td {
+                padding: 12px 10px;
+            }
+
+            .category-header {
+                font-size: 1em;
+                padding-left: 12px !important;
+            }
+
+            .notes-section {
+                margin: 15px;
+                padding: 18px;
+            }
+
+            .notes-section h3 {
+                font-size: 1.2em;
+            }
+            .notes-section li {
+                padding-left: 24px;
+            }
+            .legend {
+                gap: 15px;
+            }
+            .legend-item {
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>出産後手続きチェックリスト</h1>
+            <p>出産予定日を入力すると、各手続きの期限が自動計算されます</p>
+        </div>
+
+        <div class="date-input-section">
+            <div class="date-input-container">
+                <label for="dueDateInput">出産予定日:</label>
+                <input type="date" id="dueDateInput" onchange="calculateDeadlines()">
+                <button class="reset-btn" onclick="resetDates()">リセット</button>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #A1546E;"></div>
+                <span>最優先（期限厳守）</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #D79BA0;"></div>
+                <span>早めに済ませる</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #F2DDE3;"></div>
+                <span>準備期間あり</span>
+            </div>
+        </div>
+
+        <div class="spreadsheet-container">
+            <table class="spreadsheet">
+                <thead>
+                    <tr>
+                        <th>✓</th>
+                        <th>No.</th>
+                        <th>制度名</th>
+                        <th>申請期限</th>
+                        <th>計算された期限日</th>
+                        <th>制度概要</th>
+                        <th>メモ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="category-header">
+                        <td colspan="7">市区町村の役所で行う手続き</td>
+                    </tr>
+                    <tr class="priority-high" data-days="14" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>1</td>
+                        <td><strong>出生届</strong><br><a href="https://www.moj.go.jp/MINJI/minji25.html" target="_blank" class="reference-link">法務省公式HP</a></td>
+                        <td>出産日から14日以内</td>
+                        <td class="deadline-cell" id="deadline-1">-</td>
+                        <td>赤ちゃんの出生を戸籍に登録する手続き</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-high" data-days="15" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>2</td>
+                        <td><strong>児童手当</strong><br><a href="https://www8.cao.go.jp/shoushi/jidouteate/" target="_blank" class="reference-link">内閣府公式HP</a></td>
+                        <td>出産日から15日以内</td>
+                        <td class="deadline-cell" id="deadline-2">-</td>
+                        <td>18歳までの子どもに支給される手当</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-medium" data-days="30" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>3</td>
+                        <td>乳幼児医療費助成<br><a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kodomo/kodomo_kosodate/boshi-hoken/index.html" target="_blank" class="reference-link">厚生労働省公式HP</a></td>
+                        <td>保険証取得後できるだけ早く</td>
+                        <td class="deadline-cell" id="deadline-3">-</td>
+                        <td>子どもの医療費を自治体が助成</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-medium" data-days="60" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>4</td>
+                        <td>出産・子育て応援給付金<br><a href="https://www.mhlw.go.jp/stf/newpage_28157.html" target="_blank" class="reference-link">厚生労働省公式HP</a></td>
+                        <td>自治体により異なる</td>
+                        <td class="deadline-cell" id="deadline-4">-</td>
+                        <td>自治体から支給される給付金</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+
+                    <tr class="category-header">
+                        <td colspan="7">会社・健康保険組合を通して行う手続き</td>
+                    </tr>
+                    <tr class="priority-high" data-days="7" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>5</td>
+                        <td><strong>健康保険証申請</strong><br><a href="https://www.kyoukaikenpo.or.jp/g3/cat315/sb3160/sbb3163/1959-273/" target="_blank" class="reference-link">協会けんぽ公式HP</a></td>
+                        <td>出生届提出後できるだけ早く</td>
+                        <td class="deadline-cell" id="deadline-5">-</td>
+                        <td>赤ちゃんの健康保険加入手続き</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-low" data-days="730" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>6</td>
+                        <td>出産育児一時金<br><a href="https://www.kyoukaikenpo.or.jp/g3/cat315/sb3080/r139/" target="_blank" class="reference-link">協会けんぽ公式HP</a></td>
+                        <td>出産翌日から2年以内</td>
+                        <td class="deadline-cell" id="deadline-6">-</td>
+                        <td>出産1回につき原則50万円支給</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-medium" data-days="56" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>7</td>
+                        <td>出産手当金<br><a href="https://www.kyoukaikenpo.or.jp/g3/cat315/sb3080/r138/" target="_blank" class="reference-link">協会けんぽ公式HP</a></td>
+                        <td>産後休業中の給付金</td>
+                        <td class="deadline-cell" id="deadline-7">-</td>
+                        <td>産前産後休業中の給付金</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-medium" data-days="120" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>8</td>
+                        <td>育児休業給付金<br><a href="https://www.hellowork.mhlw.go.jp/insurance/insurance_stepup.html" target="_blank" class="reference-link">ハローワーク公式HP</a></td>
+                        <td>育休開始から4か月後の月末まで</td>
+                        <td class="deadline-cell" id="deadline-8">-</td>
+                        <td>育児休業中の生活を支える給付金</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-high" data-days="30" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>9</td>
+                        <td><strong>会社の扶養手当</strong><br><span style="font-size: 0.8em; color: #666;">各企業HP確認</span></td>
+                        <td>会社規定による</td>
+                        <td class="deadline-cell" id="deadline-9">-</td>
+                        <td>勤務先独自の家族手当</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-medium" data-days="60" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>10</td>
+                        <td>出生後休業支援給付金<br><a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000130583.html" target="_blank" class="reference-link">厚生労働省公式HP</a></td>
+                        <td>休業終了後2か月以内</td>
+                        <td class="deadline-cell" id="deadline-10">-</td>
+                        <td>2025年新設の給付金</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-medium" data-days="-30" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>11</td>
+                        <td>育児休業申請<br><a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000130583.html" target="_blank" class="reference-link">厚生労働省公式HP</a></td>
+                        <td>育休開始1か月前まで</td>
+                        <td class="deadline-cell" id="deadline-11">-</td>
+                        <td>育児休業取得のための申請</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-medium" data-days="-42" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>12</td>
+                        <td>産前産後休業届<br><a href="https://www.nenkin.go.jp/service/kounen/hokenryo-kankei/menjo/20140327-01.html" target="_blank" class="reference-link">日本年金機構公式HP</a></td>
+                        <td>出産予定日の6週間前から申請可能</td>
+                        <td class="deadline-cell" id="deadline-12">-</td>
+                        <td>産前産後休業の申請</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+
+                    <tr class="category-header">
+                        <td colspan="7">その他の手続き</td>
+                    </tr>
+                    <tr class="priority-low" data-days="365" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>13</td>
+                        <td>医療費控除<br><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1120.htm" target="_blank" class="reference-link">国税庁公式HP</a></td>
+                        <td>翌年2～3月の確定申告期間</td>
+                        <td class="deadline-cell" id="deadline-13">-</td>
+                        <td>医療費の確定申告での控除</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-low" data-days="730" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>14</td>
+                        <td>高額療養費制度<br><a href="https://www.kyoukaikenpo.or.jp/g3/cat310/sb3020/r150/" target="_blank" class="reference-link">協会けんぽ公式HP</a></td>
+                        <td>医療費支払い後2年以内</td>
+                        <td class="deadline-cell" id="deadline-14">-</td>
+                        <td>医療費の自己負担限度額超過分払い戻し</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                    <tr class="priority-medium" data-days="30" data-base="birth">
+                        <td><input type="checkbox" class="checkbox"></td>
+                        <td>15</td>
+                        <td>医療保険金申請<br><span style="font-size: 0.8em; color: #666;">各保険会社HP確認</span></td>
+                        <td>出産・入院後速やかに</td>
+                        <td class="deadline-cell" id="deadline-15">-</td>
+                        <td>民間医療保険の保険金請求</td>
+                        <td><input type="text" placeholder="メモを入力"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="notes-section">
+            <h3>📋 重要な注意事項</h3>
+            <ul>
+                <li><strong>出生届</strong>と<strong>児童手当</strong>は期限が厳しく、申請が遅れると給付を受けられないなど、大きな損失につながる可能性がありますので、特に優先して手続きしてください。</li>
+                <li><strong>会社の扶養手当</strong>も、会社によって規定が異なります。申請が遅れると遡及して支給されない場合があるため、事前に勤務先の人事・総務部門にご確認されることを強くお勧めいたします。</li>
+                <li><strong>健康保険証</strong>は、お子さんの医療機関受診に必須です。出生届提出後、できるだけ早く申請し、速やかに取得されることをお勧めします。</li>
+                <li>各自治体や健康保険組合、会社によって制度内容や申請期限、必要書類が異なる場合があります。</li>
+                <li>このチェックリストは一般的な情報に基づいています。ご自身の状況に合わせた正確な情報については、必ず<strong>お住まいの自治体の窓口、ハローワーク、勤務先の人事・総務部門、または各制度の公式HP</strong>でご確認ください。</li>
+                <li>本チェックリストは印刷して、手続きの進捗管理にご活用いただけます。完了した項目にチェックを入れたり、メモ欄を活用したりして、漏れなく手続きを進めてください。</li>
+            </ul>
+            <p class="note">
+                ※この情報は<strong>2025年6月時点</strong>のものです。制度は変更される場合がありますので、必ず最新の情報を各公式HPなどでご確認ください。
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function calculateDeadlines() {
+            const dueDate = document.getElementById('dueDateInput').value;
+            if (!dueDate) return;
+
+            const dueDateObj = new Date(dueDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const rows = document.querySelectorAll('tr[data-days]');
+            rows.forEach((row, index) => {
+                const days = parseInt(row.getAttribute('data-days'));
+                const base = row.getAttribute('data-base'); // "birth" のみ想定
+
+                let calculatedDate = new Date(dueDateObj);
+                calculatedDate.setDate(calculatedDate.getDate() + days);
+                calculatedDate.setHours(0, 0, 0, 0);
+
+                const deadlineCell = document.getElementById(`deadline-${index + 1}`);
+                if (deadlineCell) {
+                    const formattedDate = calculatedDate.toLocaleDateString('ja-JP', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    deadlineCell.textContent = formattedDate;
+
+                    deadlineCell.classList.remove('expired', 'soon');
+                    const diffTime = calculatedDate.getTime() - today.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (diffDays < 0) {
+                        deadlineCell.classList.add('expired');
+                    } else if (diffDays <= 7 && diffDays >= 0) { // 期限日当日も"soon"に含める
+                        deadlineCell.classList.add('soon');
+                    }
+                }
+            });
+        }
+
+        function resetDates() {
+            document.getElementById('dueDateInput').value = '';
+            const deadlineCells = document.querySelectorAll('[id^="deadline-"]');
+            deadlineCells.forEach(cell => {
+                cell.textContent = '-';
+                cell.classList.remove('expired', 'soon');
+            });
+
+            const checkboxes = document.querySelectorAll('.checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            const memoInputs = document.querySelectorAll('td input[type="text"]');
+            memoInputs.forEach(input => {
+                input.value = '';
+            });
+        }
+
+        // ページロード時に今日から約1ヶ月後の日付を設定（デモ用）
+        window.addEventListener('load', function() {
+            const today = new Date();
+            const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+            document.getElementById('dueDateInput').value = nextMonth.toISOString().split('T')[0];
+            calculateDeadlines();
+        });
+    </script>
+</body>
+</html>
